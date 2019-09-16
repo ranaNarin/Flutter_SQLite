@@ -1,17 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_sqlite/inherited_widgets/note_inherited_widget.dart';
 
 enum NoteMode { Editing, Adding }
 
-class Note extends StatelessWidget {
-  final NoteMode _noteMode;
+class Note extends StatefulWidget {
+  final NoteMode noteMode;
+  final int index;
 
-  Note(this._noteMode);
+  Note(this.noteMode, this.index);
+
+  @override
+  _NoteState createState() => _NoteState();
+}
+
+class _NoteState extends State<Note> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _textController = TextEditingController();
+
+  List<Map<String, String>> get _notes => NoteInheritedWidget.of(context).notes;
+
+  @override
+  void didChangeDependencies() {
+    if(widget.noteMode==NoteMode.Editing) {
+      _titleController.text = _notes[widget.index]['title'];
+      _textController.text = _notes[widget.index]['text'];
+    }
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_noteMode == NoteMode.Adding ? 'Add note' : 'Edit note'),
+        title:
+            Text(widget.noteMode == NoteMode.Adding ? 'Add note' : 'Edit note'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(40.0),
@@ -19,12 +41,14 @@ class Note extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             TextField(
+              controller: _titleController,
               decoration: InputDecoration(hintText: 'Note title'),
             ),
             Container(
               height: 8,
             ),
             TextField(
+              controller: _textController,
               decoration: InputDecoration(hintText: 'Note text'),
             ),
             Container(
@@ -34,6 +58,15 @@ class Note extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 _NoteButton('Save', Colors.blue, () {
+                  final title = _titleController.text;
+                  final text = _textController.text;
+
+                  if (widget?.noteMode == NoteMode.Adding) {
+                    _notes.add({'title': title, 'text': text});
+                  } else if (widget?.noteMode == NoteMode.Editing) {
+                    _notes[widget.index] = {'title': title, 'text': text};
+                  }
+
                   Navigator.pop(context);
                 }),
                 Container(
@@ -45,10 +78,11 @@ class Note extends StatelessWidget {
                 Container(
                   height: 16.0,
                 ),
-                _noteMode == NoteMode.Editing
+                widget.noteMode == NoteMode.Editing
                     ? Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: _NoteButton('Delete', Colors.red, () {
+                          _notes.removeAt(widget.index);
                           Navigator.pop(context);
                         }))
                     : Container()
