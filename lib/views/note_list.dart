@@ -31,7 +31,7 @@ class _NoteListState extends State<NoteList> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    Note(NoteMode.Editing, index)));
+                                    Note(NoteMode.Editing, notes[index])));
                       },
                       child: Card(
                         child: Padding(
@@ -54,7 +54,6 @@ class _NoteListState extends State<NoteList> {
                   itemCount:notes.length,
                 );
               }
-
             }
             return Center(child: CircularProgressIndicator());
           }),

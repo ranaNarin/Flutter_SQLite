@@ -23,5 +23,26 @@ class NoteProvider{
     }
     return await db.query('Notes');
   }
+
+  static Future insertNote(Map<String, dynamic> note) async{
+    await db.insert('Notes', note);
+  }
+
+  static Future updateNote(Map<String, dynamic> note) async{
+    await db.update(
+        'Notes',
+        note,
+      where: 'id = ?',
+      whereArgs: [note['id']]
+    );
+  }
+
+  static Future deleteNote(int id) async{
+    await db.delete(
+      'Notes',
+      where: 'id = ?',
+      whereArgs: [id]
+    );
+  }
  }
 
